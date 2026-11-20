@@ -1,0 +1,34 @@
+import {Component, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {AsyncPipe} from '@angular/common';
+import {Account, AccountListState, RequestStatus} from '../model/account.model';
+import { catchError, map, Observable, of } from 'rxjs';
+import {LoadingService} from '../services/loading';
+
+@Component({
+  selector: 'app-accounts',
+  imports: [
+    AsyncPipe
+  ],
+  templateUrl: './accounts.html',
+  styleUrl: './accounts.css',
+})
+export class Accounts {
+
+  private httpVar= inject(HttpClient);
+  public loadingService = inject(LoadingService);
+  accounts$ : Observable<AccountListState>= this.httpVar.get<Account[]>
+   ("http://localhost:9999/EBANK-SERVICE/accounts")
+    .pipe(
+      map(response=>{
+        return{accounts:response,status:RequestStatus.SUCCESS};
+      }),
+      catchError((err,caught)=>{
+        return of({status:RequestStatus.ERROR,errorMessage : err.statusText});
+      })
+    )
+
+
+  //
+  protected readonly RequestStatus = RequestStatus;
+}
